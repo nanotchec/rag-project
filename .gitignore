@@ -1,0 +1,21 @@
+# Environnement virtuel
+.venv/
+venv/
+
+# Caches Python
+__pycache__/
+*.py[cod]
+
+# Fichiers de logs
+*.log
+
+# Fichiers système macOS
+.DS_Store
+
+# Virtual environments (PyCharm)
+.idea/
+.pytest_cache/
+
+# Autres
+*.sqlite3
+*.env
