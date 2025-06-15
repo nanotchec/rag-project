@@ -39,7 +39,8 @@ def decouper_blocs_en_chunks(chemin_docx: str) -> List[Document]:
         )
         for idx_seg, seg in enumerate(segments):
             metadonnees = {
-                **bloc,                      # type, is_titre, texte (optionnel)
+                "section": bloc["type"],
+                "is_titre": bloc["is_titre"],
                 "index_chunk": len(chunks),
                 "index_bloc": idx_bloc,
                 "segment": idx_seg,

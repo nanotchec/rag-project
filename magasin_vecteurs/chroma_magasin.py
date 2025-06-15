@@ -24,8 +24,8 @@ class MagasinVecteursChroma:
         # Préparation des données
         texts      = [doc.texte for doc in docs]
         metadatas  = [doc.metadonnees for doc in docs]
-        ids        = [
-            f"{meta['nom_fichier']}_{meta['index_chunk']}"
+        ids = [
+            f"{meta.get('nom_fichier', 'chunk')}_{meta['index_chunk']}"
             for meta in metadatas
         ]
         # Calcul des embeddings
@@ -57,9 +57,9 @@ class MagasinVecteursChroma:
 
         # 3) Retour des top_final résultats triés
         return {
-            "ids":            [ids[i] for i in order],
-            "documents":      [texts[i] for i in order],
-            "metadatas":      [metas[i] for i in order],
-            "distance_vdb":   [distances[i] for i in order],
-            "score_ce":       [float(ce_scores[i]) for i in order],
+            "ids":          [ids[i] for i in order],
+            "documents":    [texts[i] for i in order],
+            "metadonnees":  [metas[i] for i in order],
+            "distance_vdb": [distances[i] for i in order],
+            "score_ce":     [float(ce_scores[i]) for i in order],
         }
