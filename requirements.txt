@@ -6,3 +6,6 @@ python-docx
 pymupdf
 torch
 sentence-transformers
+fastapi
+uvicorn[standard]
+python-multipart     # pour l’upload de fichiers
