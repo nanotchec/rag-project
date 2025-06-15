@@ -2,6 +2,7 @@ from chromadb import PersistentClient
 from embeddings.modele_embedding import embed
 from models.document import Document
 from typing import List, Dict
+from rerank.cross_encoder import rerank
 
 class MagasinVecteursChroma:
     """Classe pour gérer le stockage et la recherche vectorielle via ChromaDB."""
@@ -37,25 +38,28 @@ class MagasinVecteursChroma:
             metadatas=metadatas
         )
 
-    def interroger(self, requete: str, top_k: int = 5) -> Dict:
-        """
-        Recherche les chunks les plus proches de la requête.
-        Retourne un dict contenant 'ids', 'distances', 'documents', 'metadatas'.
-        """
-        # Embedding de la requête
+    def interroger(self, requete: str, top_k: int = 10, top_final: int = 5) -> Dict:
+        # 1) Recherche vectorielle initiale
         requete_emb = embed([requete])[0]
-        # Query vectorielle
-        resultats = self.collection.query(
+        results = self.collection.query(
             query_embeddings=[requete_emb.tolist()],
             n_results=top_k,
             include=["documents", "metadatas", "distances"]
         )
-        # Le dict resultats a la forme :
-        # { 'ids': [[...]], 'documents': [[...]], 'metadatas': [[...]], 'distances': [[...]] }
-        # On renvoie le premier (seule requête)
+        ids        = results["ids"][0]
+        texts      = results["documents"][0]
+        metas      = results["metadatas"][0]
+        distances  = results["distances"][0]
+
+        # 2) Reranking avec cross-encoder
+        ce_scores = rerank(requete, texts)  # numpy array of scores
+        order = ce_scores.argsort()[::-1][:top_final]
+
+        # 3) Retour des top_final résultats triés
         return {
-            "ids"       : resultats["ids"][0],
-            "documents" : resultats["documents"][0],
-            "metadatas" : resultats["metadatas"][0],
-            "distances" : resultats["distances"][0]
+            "ids":            [ids[i] for i in order],
+            "documents":      [texts[i] for i in order],
+            "metadatas":      [metas[i] for i in order],
+            "distance_vdb":   [distances[i] for i in order],
+            "score_ce":       [float(ce_scores[i]) for i in order],
         }
