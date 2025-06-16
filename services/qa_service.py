@@ -60,13 +60,13 @@ def _build_prompt(question: str, passages: List[str]) -> str:
 
 
 # ---------- API principale ----------
-def answer(question: str) -> Dict:
+def answer(question: str, nom_fichier: str = None) -> Dict:
     """
     Exécute le pipeline complet et renvoie dict :
     { 'answer': str, 'sources': List[dict] }
     """
     # 1) Retrieval + rerank
-    res = _MAGASIN.interroger(question, TOP_K_INITIAL, TOP_K_FINAL)
+    res = _MAGASIN.interroger(question, TOP_K_INITIAL, TOP_K_FINAL, nom_fichier)
 
     # 1.1) Vérifier le score de similarité CE
     max_score = max(res["score_ce"]) if res["score_ce"] else 0.0

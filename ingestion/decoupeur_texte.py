@@ -2,6 +2,7 @@
 from typing import List
 from models.document import Document
 from ingestion.docx_chargeur import charger_blocs_docx
+from pathlib import Path
 
 TAILLE_CHUNK = 300  # nombre approximatif de mots par chunk
 CHEVAUCHEMENT = 50  # nombre de mots en chevauchement
@@ -26,6 +27,7 @@ def decouper_blocs_en_chunks(chemin_docx: str) -> List[Document]:
     Renvoie la liste de Document (chunks) pour un fichier .docx,
     en respectant les blocs hiérarchiques fournis par charger_blocs_docx.
     """
+    nom_fichier = Path(chemin_docx).name
     blocs = charger_blocs_docx(chemin_docx)
     chunks: List[Document] = []
 
@@ -39,6 +41,7 @@ def decouper_blocs_en_chunks(chemin_docx: str) -> List[Document]:
         )
         for idx_seg, seg in enumerate(segments):
             metadonnees = {
+                "nom_fichier": nom_fichier,
                 "section": bloc["type"],
                 "is_titre": bloc["is_titre"],
                 "index_chunk": len(chunks),

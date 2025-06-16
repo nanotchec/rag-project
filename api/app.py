@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 import shutil
 
@@ -20,6 +20,7 @@ _CHROMA = MagasinVecteursChroma(chemin_index="magasin_chroma")
 
 class QueryRequest(BaseModel):
     question: str
+    nom_fichier: Optional[str] = None
 
 # ---------- ENDPOINTS ----------
 
@@ -30,7 +31,7 @@ async def query(req: QueryRequest):
     Retourne la réponse générée et les sources.
     """
     try:
-        result = answer(req.question)
+        result = answer(req.question, req.nom_fichier)
         return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

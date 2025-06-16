@@ -1,7 +1,7 @@
 from chromadb import PersistentClient
 from embeddings.modele_embedding import embed
 from models.document import Document
-from typing import List, Dict
+from typing import List, Dict, Optional
 from rerank.cross_encoder import rerank
 
 class MagasinVecteursChroma:
@@ -38,14 +38,18 @@ class MagasinVecteursChroma:
             metadatas=metadatas
         )
 
-    def interroger(self, requete: str, top_k: int = 10, top_final: int = 5) -> Dict:
+    def interroger(self, requete: str, top_k: int = 10, top_final: int = 5, nom_fichier: Optional[str] = None) -> Dict:
         # 1) Recherche vectorielle initiale
         requete_emb = embed([requete])[0]
-        results = self.collection.query(
-            query_embeddings=[requete_emb.tolist()],
-            n_results=top_k,
-            include=["documents", "metadatas", "distances"]
-        )
+        # Préparer les paramètres de query et filtrer par nom_fichier si fourni
+        query_params = {
+            "query_embeddings": [requete_emb.tolist()],
+            "n_results":        top_k,
+            "include":          ["documents", "metadatas", "distances"]
+        }
+        if nom_fichier:
+            query_params["where"] = {"nom_fichier": nom_fichier}
+        results = self.collection.query(**query_params)
         ids        = results["ids"][0]
         texts      = results["documents"][0]
         metas      = results["metadatas"][0]
