@@ -10,6 +10,9 @@ import textwrap
 
 from magasin_vecteurs.chroma_magasin import MagasinVecteursChroma
 
+# Seuil minimal de similarité CE : si aucune source n’atteint ce score, on renvoie un fallback
+SCORE_THRESHOLD = 0.4
+
 # ---------- Paramètres ----------
 LMSTUDIO_URL = "http://localhost:1234/v1/completions"
 MODEL_NAME   = "Magistral-Small"
@@ -64,6 +67,14 @@ def answer(question: str) -> Dict:
     """
     # 1) Retrieval + rerank
     res = _MAGASIN.interroger(question, TOP_K_INITIAL, TOP_K_FINAL)
+
+    # 1.1) Vérifier le score de similarité CE
+    max_score = max(res["score_ce"]) if res["score_ce"] else 0.0
+    if max_score < SCORE_THRESHOLD:
+        return {
+            "answer": "Désolé, je n'ai pas trouvé d'informations pertinentes pour votre requête.",
+            "sources": []
+        }
 
     # 2) Construction du prompt
     prompt = _build_prompt(question, res["documents"])
